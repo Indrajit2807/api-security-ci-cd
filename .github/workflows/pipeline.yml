@@ -1,0 +1,41 @@
+name: DevSecOps Pipeline
+
+on: [push]
+
+jobs:
+  security-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 🔍 Semgrep
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep scan --config=auto --json > semgrep.json
+
+      # 🔑 Gitleaks
+      - name: Run Gitleaks
+        run: |
+          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64
+          chmod +x gitleaks-linux-amd64
+          ./gitleaks-linux-amd64 detect --source . --report-format json --report-path gitleaks.json
+
+      # 📦 Dependency scan
+      - name: Run Safety
+        run: |
+          pip install safety
+          safety check --json > safety.json
+
+      # 🧠 Policy Engine
+      - name: Run Policy Engine
+        run: python policy/policy_engine.py
+
+      # 🐙 Create Issue if failed
+      - name: Create Issue
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python automation/create_issue.py

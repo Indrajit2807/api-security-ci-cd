@@ -19,9 +19,8 @@ jobs:
       # 🔑 Gitleaks
       - name: Run Gitleaks
         run: |
-          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64
-          chmod +x gitleaks-linux-amd64
-          ./gitleaks-linux-amd64 detect --source . --report-format json --report-path gitleaks.json
+          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | sh
+          ./gitleaks detect --source . --report-format json --report-path gitleaks.json
 
       # 📦 Dependency scan
       - name: Run Safety
